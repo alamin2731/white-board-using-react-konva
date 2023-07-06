@@ -26,7 +26,9 @@ The Whiteboard is a simple yet powerful drawing tool built using React and the K
 - **Clear All**: Want a fresh start? Click the clear all button to remove all the elements from the canvas and start anew.
 
 - **Save Canvas**: Save your masterpiece as an image file. With just one click, download your drawing and share it with others.
+# Live
 
+[Click here](https://white-board-using-react-konva.vercel.app/) to visit the website.
 ## Installation
 
 To use the Whiteboard application, follow these steps:
