@@ -210,16 +210,17 @@ const Whiteboard = () => {
             <FaEraser className="w-5 h-5" />
             <span>Eraser</span>
           </button>
-
-          <label htmlFor="color">Color:</label>
+         
+          <label className="text-xs font-bold" htmlFor="color">Color:</label>
           <input
+          
             type="color"
             id="color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
           />
 
-          <label htmlFor="strokeWidth" className="mr-2">
+          <label htmlFor="strokeWidth" className="mr-2 text-xs font-bold">
             Stroke Width:
           </label>
           <div className="flex items-center">
@@ -242,7 +243,7 @@ const Whiteboard = () => {
           </div>
 
           <button
-            className="flex items-center hover:bg-green-600 text-white py-2 px-1 rounded mr-2 transition-colors duration-300"
+            className="text-xs font-bold flex items-center hover:bg-green-600 text-white py-2 px-1 rounded mr-2 transition-colors duration-300"
             onClick={handleUndo}
           >
             <BiUndo className="w-5 h-5" />
@@ -250,7 +251,7 @@ const Whiteboard = () => {
           </button>
 
           <button
-            className="flex items-center hover:bg-red-600 text-white py-2 px-1 rounded mr-2 transition-colors duration-300"
+            className=" text-xs font-bold flex items-center hover:bg-red-600 text-white py-2 px-1 rounded mr-2 transition-colors duration-300"
             onClick={handleClearAll}
           >
             <AiOutlineClear className="w-5 h-5" />
@@ -258,7 +259,7 @@ const Whiteboard = () => {
           </button>
 
           <button
-            className="flex items-center hover:bg-blue-600 text-white py-2 px-1 rounded transition-colors duration-300"
+            className="text-xs font-bold flex items-center hover:bg-blue-600 text-white py-2 px-1 rounded transition-colors duration-300"
             onClick={handleSaveCanvas}
           >
             <BiSolidSave className="w-5 h-5" />
