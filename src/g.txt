@@ -1,74 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Stage, Layer, Line, Rect, Circle, RegularPolygon,Transformer } from "react-konva";
+import { Stage, Layer, Line, Rect, Circle, RegularPolygon } from "react-konva";
 import { BsFillPenFill } from "react-icons/bs";
-import { AiOutlineClear, AiOutlineZoomIn, AiOutlineZoomOut } from "react-icons/ai";
 import { BiRectangle, BiUndo, BiSolidSave } from "react-icons/bi";
 import { FaEraser } from "react-icons/fa";
+import { AiOutlineClear } from "react-icons/ai";
 import { GiMoebiusTriangle, GiStraightPipe, GiCircleClaws } from "react-icons/gi";
 
 
 const Whiteboard = () => {
 
+  const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
 
-  const handleResetZoom = () => {
-    setScale(1); // Reset the scale to 1 (default zoom)
-  };
-const getPointerPosition = (stageRef, event, scale) => {
-  const stage = stageRef.current;
-  const pointerPosition = stage.getPointerPosition();
-
-  if (!pointerPosition) {
-    return { x: 0, y: 0 };
-  }
-
-  // Calculate the position adjusted for the scale
-  const x = (pointerPosition.x - stage.x()) / scale;
-  const y = (pointerPosition.y - stage.y()) / scale;
-
-  return { x, y };
-};
-
-
-
-  const [scale, setScale] = useState(1); // Initialize scale to 1 (no zoom)
-
-  const handleZoomIn = () => {
-    // Increase the scale factor by 0.1 when zooming in
-    setScale((prevScale) => prevScale + 0.1);
-  };
-
-  const handleZoomOut = () => {
-    // Decrease the scale factor by 0.1 when zooming out
-    setScale((prevScale) => Math.max(prevScale - 0.1, 0.1)); // Limit the minimum scale to 0.1
-  };
-
-  useEffect(() => {
-    // Add event listener for scroll
-    window.addEventListener("wheel", handleScroll);
-
-    // Cleanup the event listener on component unmount
-    return () => {
-      window.removeEventListener("wheel", handleScroll);
-    };
-  }, []);
-
-
-  // const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
-
-  const handleScroll = (e) => {
-  const canvas = stageRef.current.content.getBoundingClientRect();
-  const mouseY = e.clientY - canvas.top;
-  const isMouseAtBottom = mouseY >= canvas.height - 15; // Considering a small threshold
-
-  if (e.deltaY > 0 && isMouseAtBottom) {
-    // Increase the canvas height whenever the user scrolls down and mouse is at the bottom
+  const handleScroll = () => {
+    // Increase the canvas height whenever the user scrolls down
     setCanvasSize((prevSize) => ({
       ...prevSize,
-      height: prevSize.height + 100, // You can adjust the increase value as needed
+      height: prevSize.height + 10, // You can adjust the increase value as needed
     }));
-  }
-};
-
+  };
   const [mode, setMode] = useState("pen");
   const [lines, setLines] = useState([]);
   const [color, setColor] = useState("#000000");
@@ -77,21 +26,24 @@ const getPointerPosition = (stageRef, event, scale) => {
   const isDrawing = useRef(false);
   //const [canvasImage, setCanvasImage] = useState("");
   const [canvasSize, setCanvasSize] = useState({
-    width: window.innerWidth-15,
+    width: window.innerWidth,
     height: window.innerHeight,
   });
 
   const handleMouseDown = (e) => {
-  isDrawing.current = true;
-  const pos = getPointerPosition(stageRef, e, scale);
-  setLines([...lines, { tool: mode, points: [pos.x, pos.y], color, strokeWidth }]);
-};
+    isDrawing.current = true;
+    const pos = e.target.getStage().getPointerPosition();
+    setLines([
+      ...lines,
+      { tool: mode, points: [pos.x, pos.y], color, strokeWidth },
+    ]);
+  };
 
   const handleMouseMove = (e) => {
     if (!isDrawing.current) {
       return;
     }
-  const point = getPointerPosition(stageRef, e, scale);
+    const point = e.target.getStage().getPointerPosition();
 
     if (mode === "pen" || mode === "eraser") {
       const lastLine = lines[lines.length - 1];
@@ -151,67 +103,44 @@ const getPointerPosition = (stageRef, event, scale) => {
     setStrokeWidth(Number(e.target.value));
   };
 
- 
-  const handleEraserClick = () => {
-    setMode("eraser");
-  };
-const handleSaveCanvas = () => {
-  const stage = stageRef.current.getStage();
+  const handleSaveCanvas = () => {
+    const stage = stageRef.current.getStage();
 
-  // Create a temporary white background layer
-  const backgroundLayer = new window.Konva.Layer();
-  const backgroundRect = new window.Konva.Rect({
-    x: 0,
-    y: 0,
-    width: stage.width(),
-    height: stage.height(),
-    fill: "white",
-  });
-  backgroundLayer.add(backgroundRect);
+    // Create a temporary white background layer
+    const backgroundLayer = new window.Konva.Layer();
+    const backgroundRect = new window.Konva.Rect({
+      x: 0,
+      y: 0,
+      width: stage.width(),
+      height: stage.height(),
+      fill: "white",
+    });
+    backgroundLayer.add(backgroundRect);
 
-  // Add the background layer to the bottom of the layer stack
-  stage.add(backgroundLayer);
-  backgroundLayer.moveToBottom();
+    // Add the background layer to the bottom of the layer stack
+    stage.add(backgroundLayer);
+    backgroundLayer.moveToBottom();
 
-  // Render the stage to a data URL with the white background
-  const dataURL = stage.toDataURL({ mimeType: "image/png" });
+    // Render the stage to a data URL with the white background
+    const dataURL = stage.toDataURL({ mimeType: "image/png" });
 
-  // Remove the background layer from the stage
-  backgroundLayer.remove();
-
-  // Create a new image object
-  const img = new Image();
-
-  // When the image is loaded, create a canvas, draw the image with a white background, and create a new data URL
-  img.onload = () => {
-    // Create a canvas element with the same dimensions as the image
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
-
-    // Draw a white background on the canvas
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw the image on top of the white background
-    ctx.drawImage(img, 0, 0);
-
-    // Convert the modified canvas to a new data URL
-    const newDataURL = canvas.toDataURL("image/png");
+    // Remove the background layer from the stage
+    backgroundLayer.remove();
 
     // Create a temporary link element
     const link = document.createElement("a");
-    link.href = newDataURL;
-    link.download = "canvas_with_white_background.png";
+    link.href = dataURL;
+    link.download = "canvas.png";
 
     // Programmatically trigger the download
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
-  // Set the image source to your dataURL
-  img.src = dataURL;
-};
+  const handleEraserClick = () => {
+    setMode("eraser");
+  };
 
   const handleResize = () => {
     setCanvasSize({
@@ -231,8 +160,8 @@ const handleSaveCanvas = () => {
   }, []);
 
   return (
-    <div className="bg-white ">
-      <div className="w-full fixed z-50 ">
+    <div className="bg-white">
+      <div className="w-full">
         <div className="flex  space-x-4 bg-green-500 text-white h-16 justify-center and items-center property">
           <button
             className={`flex items-center space-x-2 ${
@@ -296,7 +225,7 @@ const handleSaveCanvas = () => {
          
           <label className="text-xs font-bold" htmlFor="color">Color:</label>
           <input
-           className="rounded-lg"
+          
             type="color"
             id="color"
             value={color}
@@ -306,7 +235,7 @@ const handleSaveCanvas = () => {
           <label htmlFor="strokeWidth" className="mr-2 text-xs font-bold">
             Stroke Width:
           </label>
-          <div className="flex items-center  rounded-full p-1 border-2 border-gray-300 focus:outline-none focus:border-blue-500">
+          <div className="flex items-center">
             <input
               type="range"
               id="strokeWidth"
@@ -314,7 +243,7 @@ const handleSaveCanvas = () => {
               max="50"
               value={strokeWidth}
               onChange={handleStrokeWidthChange}
-               
+              className="w-25 mr-2"
             />
             <div
               className="w-6 h-6 rounded-full"
@@ -352,13 +281,11 @@ const handleSaveCanvas = () => {
       </div>
       <Stage
         width={canvasSize.width}
-      height={canvasSize.height}
-      scaleX={scale}
-      scaleY={scale}
-      onMouseDown={handleMouseDown}
-      onMousemove={handleMouseMove}
-      onMouseup={handleMouseUp}
-      ref={stageRef}
+        height={canvasSize.height} // This will update the canvas height dynamically
+        onMouseDown={handleMouseDown}
+        onMousemove={handleMouseMove}
+        onMouseup={handleMouseUp}
+        ref={stageRef}
       >
         <Layer>
           {lines.map((line, i) => {
@@ -431,30 +358,6 @@ const handleSaveCanvas = () => {
           })}
         </Layer>
       </Stage>
-      <div className="fixed bottom-0 left-0 space-x-4 w-full flex justify-center">
-        <button
-          className=" text-xs font-bold flex items-center  text-black py-2 px-1 rounded transition-colors duration-300"
-          onClick={handleZoomIn}
-        >
-          <AiOutlineZoomIn className="w-5 h-5" />
-          <span>Zoom In</span>
-        </button>
-
-        <button
-          className="text-xs font-bold flex items-center  text-black py-2 px-1 rounded transition-colors duration-300"
-          onClick={handleZoomOut}
-        >
-          <AiOutlineZoomOut className="w-5 h-5" />
-          <span>Zoom Out</span>
-        </button>
-      <button
-  className="text-xs font-bold flex items-center  text-black py-2 px-1 rounded transition-colors duration-300"
-  onClick={handleResetZoom}
->
-  <span>Reset Zoom</span>
-</button>
-
-      </div>
     </div>
   );
 };

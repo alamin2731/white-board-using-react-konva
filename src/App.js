@@ -3,7 +3,7 @@ import Whiteboard from './Whiteboard';
 
 function App() {
   return (
-    <div className="App">
+    <div className="App" id='uu'>
       <Whiteboard/>
     </div>
   );
