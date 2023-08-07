@@ -1,36 +1,48 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Stage, Layer, Line, Rect, Circle, RegularPolygon,Transformer } from "react-konva";
-import { BsFillPenFill } from "react-icons/bs";
-import { AiOutlineClear, AiOutlineZoomIn, AiOutlineZoomOut } from "react-icons/ai";
-import { BiRectangle, BiUndo, BiSolidSave } from "react-icons/bi";
+import {Stage,Layer,Line,Rect,Circle,RegularPolygon,Transformer,} from "react-konva";
+import { BsFillPenFill,BsCircle } from "react-icons/bs";
+import {AiOutlineClear,AiOutlineZoomIn,AiOutlineZoomOut,} from "react-icons/ai";
+import { BiRectangle, BiUndo } from "react-icons/bi";
 import { FaEraser } from "react-icons/fa";
-import { GiMoebiusTriangle, GiStraightPipe, GiCircleClaws } from "react-icons/gi";
-
+import {GiMoebiusTriangle,GiStraightPipe,GiClick} from "react-icons/gi";
 
 const Whiteboard = () => {
 
+  const [mode, setMode] = useState("pen");
+  const [lines, setLines] = useState([]);
+  const [color, setColor] = useState("#000000");
+  const [strokeWidth, setStrokeWidth] = useState(2);
+  const stageRef = useRef(null);
+  const isDrawing = useRef(false);
+  const [zoomPercentage, setZoomPercentage] = useState(100);
+  //const [canvasImage, setCanvasImage] = useState("");
+    // const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
+  const [canvasSize, setCanvasSize] = useState({
+    width: window.innerWidth - 15,
+    height: window.innerHeight,
+  });
+  const [scale, setScale] = useState(1); // Initialize scale to 1 (no zoom)
 
   const handleResetZoom = () => {
     setScale(1); // Reset the scale to 1 (default zoom)
   };
-const getPointerPosition = (stageRef, event, scale) => {
-  const stage = stageRef.current;
-  const pointerPosition = stage.getPointerPosition();
 
-  if (!pointerPosition) {
-    return { x: 0, y: 0 };
-  }
+  const getPointerPosition = (stageRef, event, scale) => {
+    const stage = stageRef.current;
+    const pointerPosition = stage.getPointerPosition();
 
-  // Calculate the position adjusted for the scale
-  const x = (pointerPosition.x - stage.x()) / scale;
-  const y = (pointerPosition.y - stage.y()) / scale;
+    if (!pointerPosition) {
+      return { x: 0, y: 0 };
+    }
 
-  return { x, y };
-};
+    // Calculate the position adjusted for the scale
+    const x = (pointerPosition.x - stage.x()) / scale;
+    const y = (pointerPosition.y - stage.y()) / scale;
+
+    return { x, y };
+  };
 
 
-
-  const [scale, setScale] = useState(1); // Initialize scale to 1 (no zoom)
 
   const handleZoomIn = () => {
     // Increase the scale factor by 0.1 when zooming in
@@ -53,45 +65,35 @@ const getPointerPosition = (stageRef, event, scale) => {
   }, []);
 
 
-  // const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
 
   const handleScroll = (e) => {
-  const canvas = stageRef.current.content.getBoundingClientRect();
-  const mouseY = e.clientY - canvas.top;
-  const isMouseAtBottom = mouseY >= canvas.height - 15; // Considering a small threshold
+    const canvas = stageRef.current.content.getBoundingClientRect();
+    const mouseY = e.clientY - canvas.top;
+    const isMouseAtBottom = mouseY >= canvas.height - 15; // Considering a small threshold
 
-  if (e.deltaY > 0 && isMouseAtBottom) {
-    // Increase the canvas height whenever the user scrolls down and mouse is at the bottom
-    setCanvasSize((prevSize) => ({
-      ...prevSize,
-      height: prevSize.height + 100, // You can adjust the increase value as needed
-    }));
-  }
-};
-
-  const [mode, setMode] = useState("pen");
-  const [lines, setLines] = useState([]);
-  const [color, setColor] = useState("#000000");
-  const [strokeWidth, setStrokeWidth] = useState(2);
-  const stageRef = useRef(null);
-  const isDrawing = useRef(false);
-  //const [canvasImage, setCanvasImage] = useState("");
-  const [canvasSize, setCanvasSize] = useState({
-    width: window.innerWidth-15,
-    height: window.innerHeight,
-  });
+    if (e.deltaY > 0 && isMouseAtBottom) {
+      // Increase the canvas height whenever the user scrolls down and mouse is at the bottom
+      setCanvasSize((prevSize) => ({
+        ...prevSize,
+        height: prevSize.height + 100, // You can adjust the increase value as needed
+      }));
+    }
+  };
 
   const handleMouseDown = (e) => {
-  isDrawing.current = true;
-  const pos = getPointerPosition(stageRef, e, scale);
-  setLines([...lines, { tool: mode, points: [pos.x, pos.y], color, strokeWidth }]);
-};
+    isDrawing.current = true;
+    const pos = getPointerPosition(stageRef, e, scale);
+    setLines([
+      ...lines,
+      { tool: mode, points: [pos.x, pos.y], color, strokeWidth },
+    ]);
+  };
 
   const handleMouseMove = (e) => {
     if (!isDrawing.current) {
       return;
     }
-  const point = getPointerPosition(stageRef, e, scale);
+    const point = getPointerPosition(stageRef, e, scale);
 
     if (mode === "pen" || mode === "eraser") {
       const lastLine = lines[lines.length - 1];
@@ -135,12 +137,11 @@ const getPointerPosition = (stageRef, event, scale) => {
   };
 
   const handleUndo = () => {
-   setLines(lines.slice(0, -1));
+    setLines(lines.slice(0, -1));
   };
 
   const handleClearAll = () => {
     setLines([]);
-   
   };
 
   const handleModeChange = (newMode) => {
@@ -151,74 +152,74 @@ const getPointerPosition = (stageRef, event, scale) => {
     setStrokeWidth(Number(e.target.value));
   };
 
- 
   const handleEraserClick = () => {
     setMode("eraser");
   };
-const handleSaveCanvas = () => {
-  const stage = stageRef.current.getStage();
 
-  // Create a temporary white background layer
-  const backgroundLayer = new window.Konva.Layer();
-  const backgroundRect = new window.Konva.Rect({
-    x: 0,
-    y: 0,
-    width: stage.width(),
-    height: stage.height(),
-    fill: "white",
-  });
-  backgroundLayer.add(backgroundRect);
+  const handleSaveCanvas = () => {
+    const stage = stageRef.current.getStage();
 
-  // Add the background layer to the bottom of the layer stack
-  stage.add(backgroundLayer);
-  backgroundLayer.moveToBottom();
-
-  // Render the stage to a data URL with the white background
-  const dataURL = stage.toDataURL({ mimeType: "image/png" });
-
-  // Remove the background layer from the stage
-  backgroundLayer.remove();
-
-  // Create a new image object
-  const img = new Image();
-
-  // When the image is loaded, create a canvas, draw the image with a white background, and create a new data URL
-  img.onload = () => {
-    // Create a canvas element with the same dimensions as the image
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
-
-    // Draw a white background on the canvas
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw the image on top of the white background
-    ctx.drawImage(img, 0, 0);
-
-    // Convert the modified canvas to a new data URL
-    const newDataURL = canvas.toDataURL("image/png");
-
-    // Create a temporary link element
-    const link = document.createElement("a");
-    link.href = newDataURL;
-    link.download = "canvas_with_white_background.png";
-
-    // Programmatically trigger the download
-    link.click();
-  };
-
-  // Set the image source to your dataURL
-  img.src = dataURL;
-};
-
-  const handleResize = () => {
-    setCanvasSize({
-      width: window.innerWidth,
-      height: window.innerHeight,
+    // Create a temporary white background layer
+    const backgroundLayer = new window.Konva.Layer();
+    const backgroundRect = new window.Konva.Rect({
+      x: 0,
+      y: 0,
+      width: stage.width(),
+      height: stage.height(),
+      fill: "white",
     });
+    backgroundLayer.add(backgroundRect);
+
+    // Add the background layer to the bottom of the layer stack
+    stage.add(backgroundLayer);
+    backgroundLayer.moveToBottom();
+
+    // Render the stage to a data URL with the white background
+    const dataURL = stage.toDataURL({ mimeType: "image/png" });
+
+    // Remove the background layer from the stage
+    backgroundLayer.remove();
+
+    // Create a new image object
+    const img = new Image();
+
+    // When the image is loaded, create a canvas, draw the image with a white background, and create a new data URL
+    img.onload = () => {
+      // Create a canvas element with the same dimensions as the image
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Draw a white background on the canvas
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the image on top of the white background
+      ctx.drawImage(img, 0, 0);
+
+      // Convert the modified canvas to a new data URL
+      const newDataURL = canvas.toDataURL("image/png");
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = newDataURL;
+      link.download = "canvas_with_white_background.png";
+
+      // Programmatically trigger the download
+      link.click();
+    };
+
+    // Set the image source to your dataURL
+    img.src = dataURL;
   };
+
+ 
+  useEffect(() => {
+    // Calculate the zoom percentage when the scale changes
+    const percentage = Math.round(scale * 100);
+    setZoomPercentage(percentage);
+  }, [scale]);
 
   useEffect(() => {
     // Add event listener for scroll
@@ -233,132 +234,23 @@ const handleSaveCanvas = () => {
   return (
     <div className="bg-white ">
       <div className="w-full fixed z-50 ">
-        <div className="flex  space-x-4 bg-green-500 text-white h-16 justify-center and items-center property">
-          <button
-            className={`flex items-center space-x-2 ${
-              mode === "pen" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("pen")}
-          >
-            <BsFillPenFill className="w-5 h-5" />
-            <span>Pen</span>
-          </button>
-
-          <button
-            className={`flex items-center space-x-2 ${
-              mode === "rectangle" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("rectangle")}
-          >
-            <BiRectangle className="w-5 h-5" />
-            <span>Rectangle</span>
-          </button>
-
-          <button
-            className={`flex items-center space-x-2 ${
-              mode === "triangle" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("triangle")}
-          >
-            <GiMoebiusTriangle className="w-5 h-5" />
-            <span>Triangle</span>
-          </button>
-
-          <button
-            className={`flex items-center space-x-2 ${
-              mode === "line" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("line")}
-          >
-            <GiStraightPipe className="w-5 h-5" />
-            <span>Line</span>
-          </button>
-
-          <button
-            className={`flex items-center space-x-2 ${
-              mode === "circle" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("circle")}
-          >
-            <GiCircleClaws className="w-5 h-5" />
-            <span>Circle</span>
-          </button>
-
-          <button
-            className={`flex items-center space-x-2 ${
-              mode === "eraser" ? "selected" : ""
-            }`}
-            onClick={handleEraserClick}
-          >
-            <FaEraser className="w-5 h-5" />
-            <span>Eraser</span>
-          </button>
-         
-          <label className="text-xs font-bold" htmlFor="color">Color:</label>
-          <input
-           className="rounded-lg"
-            type="color"
-            id="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-          />
-
-          <label htmlFor="strokeWidth" className="mr-2 text-xs font-bold">
-            Stroke Width:
-          </label>
-          <div className="flex items-center  rounded-full p-1 border-2 border-gray-300 focus:outline-none focus:border-blue-500">
-            <input
-              type="range"
-              id="strokeWidth"
-              min="1"
-              max="50"
-              value={strokeWidth}
-              onChange={handleStrokeWidthChange}
-               
-            />
-            <div
-              className="w-6 h-6 rounded-full"
-              style={{
-                backgroundColor: color,
-                transform: `scale(${strokeWidth / 50})`,
-              }}
-            ></div>
-          </div>
-
-          <button
-            className="text-xs font-bold flex items-center hover:bg-green-600 text-white py-2 px-1 rounded mr-2 transition-colors duration-300"
-            onClick={handleUndo}
-          >
-            <BiUndo className="w-5 h-5" />
-            <span>Undo</span>
-          </button>
-
-          <button
-            className=" text-xs font-bold flex items-center hover:bg-red-600 text-white py-2 px-1 rounded mr-2 transition-colors duration-300"
-            onClick={handleClearAll}
-          >
-            <AiOutlineClear className="w-5 h-5" />
-            <span>Clear All</span>
-          </button>
-
-          <button
-            className="text-xs font-bold flex items-center hover:bg-blue-600 text-white py-2 px-1 rounded transition-colors duration-300"
-            onClick={handleSaveCanvas}
-          >
-            <BiSolidSave className="w-5 h-5" />
-            <span>Save Canvas</span>
-          </button>
-        </div>
+        <button
+          className="fixed px-5 py-2.5 top-0 right-0 space-x-4 flex justify-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 p-2 shadow-lg shadow-neutral-950 rounded-l"
+          onClick={handleSaveCanvas}
+        >
+          {/* <BiSolidSave className="w-5 h-5" /> */}
+          <span>Save</span>
+        </button>
       </div>
       <Stage
         width={canvasSize.width}
-      height={canvasSize.height}
-      scaleX={scale}
-      scaleY={scale}
-      onMouseDown={handleMouseDown}
-      onMousemove={handleMouseMove}
-      onMouseup={handleMouseUp}
-      ref={stageRef}
+        height={canvasSize.height}
+        scaleX={scale}
+        scaleY={scale}
+        onMouseDown={handleMouseDown}
+        onMousemove={handleMouseMove}
+        onMouseup={handleMouseUp}
+        ref={stageRef}
       >
         <Layer>
           {lines.map((line, i) => {
@@ -397,7 +289,9 @@ const handleSaveCanvas = () => {
                   sides={3}
                   x={x1}
                   y={y1}
-                  radius={Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))}
+                  radius={Math.sqrt(
+                    Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
+                  )}
                   stroke={line.color}
                   strokeWidth={line.strokeWidth}
                 />
@@ -431,29 +325,140 @@ const handleSaveCanvas = () => {
           })}
         </Layer>
       </Stage>
-      <div className="fixed bottom-0 left-0 space-x-4 w-full flex justify-center">
+
+      <div className="fixed bottom-0 left-0.2 space-x-4 flex justify-center bg-grey p-2 shadow-lg shadow-neutral-950 rounded-lg">
         <button
-          className=" text-xs font-bold flex items-center  text-black py-2 px-1 rounded transition-colors duration-300"
+          className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300 mr-2"
           onClick={handleZoomIn}
         >
           <AiOutlineZoomIn className="w-5 h-5" />
-          <span>Zoom In</span>
         </button>
-
+        <span className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300">
+          {zoomPercentage}%
+        </span>
         <button
-          className="text-xs font-bold flex items-center  text-black py-2 px-1 rounded transition-colors duration-300"
+          className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300 mr-2"
           onClick={handleZoomOut}
         >
           <AiOutlineZoomOut className="w-5 h-5" />
-          <span>Zoom Out</span>
         </button>
-      <button
-  className="text-xs font-bold flex items-center  text-black py-2 px-1 rounded transition-colors duration-300"
-  onClick={handleResetZoom}
->
-  <span>Reset Zoom</span>
-</button>
+        <button
+          className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
+          onClick={handleResetZoom}
+        >
+          <GiClick className="w-5 h-5" />
+        </button>
+      </div>
 
+      
+      {/* last */}
+      <div className="fixed bottom-0 right-0 space-x-4 flex justify-center bg-grey p-2 shadow-lg shadow-neutral-950 rounded-lg">
+        <button
+          className=" hover:bg-red-600 active:bg-red-700	 text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
+          onClick={handleClearAll}
+        >
+          <AiOutlineClear className="w-5 h-5" />
+        </button>
+        <button
+          className="hover:bg-slate-200	active:bg-gray-300	 text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
+          onClick={handleUndo}
+        >
+          <BiUndo className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 space-x-4 flex justify-center bg-grey p-2 shadow-lg shadow-neutral-950 rounded-lg">
+        <button
+          className={`flex items-center space-x-2 ${
+            mode === "pen" ? "selected" : ""
+          }`}
+          onClick={() => handleModeChange("pen")}
+        >
+          <BsFillPenFill className="w-5 h-5" />
+          {/* <span>Pen</span> */}
+        </button>
+
+        <button
+          className={`flex items-center space-x-2 ${
+            mode === "rectangle" ? "selected" : ""
+          }`}
+          onClick={() => handleModeChange("rectangle")}
+        >
+          <BiRectangle className="w-5 h-5" />
+          {/* <span>Rectangle</span> */}
+        </button>
+
+        <button
+          className={`flex items-center space-x-2 ${
+            mode === "triangle" ? "selected" : ""
+          }`}
+          onClick={() => handleModeChange("triangle")}
+        >
+          <GiMoebiusTriangle className="w-5 h-5" />
+          {/* <span>Triangle</span> */}
+        </button>
+
+        <button
+          className={`flex items-center space-x-2 ${
+            mode === "line" ? "selected" : ""
+          }`}
+          onClick={() => handleModeChange("line")}
+        >
+          <GiStraightPipe className="w-5 h-5" />
+          {/* <span>Line</span> */}
+        </button>
+
+        <button
+          className={`flex items-center space-x-2 ${
+            mode === "circle" ? "selected" : ""
+          }`}
+          onClick={() => handleModeChange("circle")}
+        >
+          <BsCircle className="w-5 h-5" />
+          {/* <span>Circle</span> */}
+        </button>
+        <button
+          className={`flex items-center space-x-2 ${
+            mode === "eraser" ? "selected" : ""
+          }`}
+          onClick={handleEraserClick}
+        >
+          <FaEraser className="w-5 h-5" />
+          {/* <span>Eraser</span> */}
+        </button>
+
+        {/* <button
+          className="hover:bg-slate-200 active:bg-gray-300 text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
+          onClick={() => {
+            const inputElement = document.getElementById("strokeWidth");
+            inputElement.style.display = "block";
+            inputElement.focus();
+          }}
+        >
+          <GiResize className="w-5 h-5" />
+        </button> */}
+       <input className=""
+          type="range"
+          id="strokeWidth"
+          min="1"
+          max="50"
+          value={strokeWidth}
+          onChange={handleStrokeWidthChange}
+        />
+        <input
+          className="rounded-lg mt-3 w-10 "
+          type="color"
+          id="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
+        <span
+          className="w-6 h-6 rounded-full mt-4 "
+          style={{
+            backgroundColor: color,
+            transform: `scale(${strokeWidth / 50})`,
+          }}
+        ></span>
       </div>
     </div>
   );
