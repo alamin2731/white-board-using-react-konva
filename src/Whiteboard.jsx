@@ -1,22 +1,34 @@
 import React, { useState, useRef, useEffect } from "react";
-import {Stage,Layer,Line,Rect,Circle,RegularPolygon,Transformer,} from "react-konva";
-import { BsFillPenFill,BsCircle } from "react-icons/bs";
-import {AiOutlineClear,AiOutlineZoomIn,AiOutlineZoomOut,} from "react-icons/ai";
+import {
+  Stage,
+  Layer,
+  Line,
+  Rect,
+  Circle,
+  RegularPolygon,
+  Transformer,
+} from "react-konva";
+import { BsFillPenFill, BsCircle } from "react-icons/bs";
+import {
+  AiOutlineClear,
+  AiOutlineZoomIn,
+  AiOutlineZoomOut,
+} from "react-icons/ai";
 import { BiRectangle, BiUndo } from "react-icons/bi";
+import { BsTriangle } from "react-icons/bs";
 import { FaEraser } from "react-icons/fa";
-import {GiMoebiusTriangle,GiStraightPipe,GiClick} from "react-icons/gi";
+import { GiMoebiusTriangle, GiStraightPipe, GiClick } from "react-icons/gi";
 
 const Whiteboard = () => {
-
   const [mode, setMode] = useState("pen");
   const [lines, setLines] = useState([]);
   const [color, setColor] = useState("#000000");
-  const [strokeWidth, setStrokeWidth] = useState(2);
+  const [strokeWidth, setStrokeWidth] = useState(20);
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
   const [zoomPercentage, setZoomPercentage] = useState(100);
   //const [canvasImage, setCanvasImage] = useState("");
-    // const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
+  // const [canvasHeight, setCanvasHeight] = useState(window.innerHeight);
   const [canvasSize, setCanvasSize] = useState({
     width: window.innerWidth - 15,
     height: window.innerHeight,
@@ -42,8 +54,6 @@ const Whiteboard = () => {
     return { x, y };
   };
 
-
-
   const handleZoomIn = () => {
     // Increase the scale factor by 0.1 when zooming in
     setScale((prevScale) => prevScale + 0.1);
@@ -63,8 +73,6 @@ const Whiteboard = () => {
       window.removeEventListener("wheel", handleScroll);
     };
   }, []);
-
-
 
   const handleScroll = (e) => {
     const canvas = stageRef.current.content.getBoundingClientRect();
@@ -214,7 +222,6 @@ const Whiteboard = () => {
     img.src = dataURL;
   };
 
- 
   useEffect(() => {
     // Calculate the zoom percentage when the scale changes
     const percentage = Math.round(scale * 100);
@@ -234,13 +241,7 @@ const Whiteboard = () => {
   return (
     <div className="bg-white ">
       <div className="w-full fixed z-50 ">
-        <button
-          className="fixed px-5 py-2.5 top-0 right-0 space-x-4 flex justify-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 p-2 shadow-lg shadow-neutral-950 rounded-l"
-          onClick={handleSaveCanvas}
-        >
-          {/* <BiSolidSave className="w-5 h-5" /> */}
-          <span>Save</span>
-        </button>
+        
       </div>
       <Stage
         width={canvasSize.width}
@@ -326,48 +327,46 @@ const Whiteboard = () => {
         </Layer>
       </Stage>
 
-      <div className="fixed bottom-0 left-0.2 space-x-4 flex justify-center bg-grey p-2 shadow-lg shadow-neutral-950 rounded-lg">
-        <button
-          className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300 mr-2"
-          onClick={handleZoomIn}
-        >
-          <AiOutlineZoomIn className="w-5 h-5" />
-        </button>
-        <span className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300">
-          {zoomPercentage}%
-        </span>
-        <button
-          className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300 mr-2"
-          onClick={handleZoomOut}
-        >
-          <AiOutlineZoomOut className="w-5 h-5" />
-        </button>
-        <button
-          className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
-          onClick={handleResetZoom}
-        >
-          <GiClick className="w-5 h-5" />
-        </button>
-      </div>
-
-      
       {/* last */}
-      <div className="fixed bottom-0 right-0 space-x-4 flex justify-center bg-grey p-2 shadow-lg shadow-neutral-950 rounded-lg">
-        <button
-          className=" hover:bg-red-600 active:bg-red-700	 text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
-          onClick={handleClearAll}
-        >
-          <AiOutlineClear className="w-5 h-5" />
-        </button>
-        <button
-          className="hover:bg-slate-200	active:bg-gray-300	 text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
-          onClick={handleUndo}
-        >
-          <BiUndo className="w-5 h-5" />
-        </button>
-      </div>
 
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 space-x-4 flex justify-center bg-grey p-2 shadow-lg shadow-neutral-950 rounded-lg">
+      <div className=" border-2 bg-white fixed bottom-0 left-1/2 transform -translate-x-1/2 space-x-4 flex justify-center bg-grey p-0.5 shadow-lg shadow-neutral-950 rounded-lg">
+        <div className="border-r-2 border-gray-60  h-8 p-2 mt-2  flex">
+          <button
+          className=""
+          onClick={handleSaveCanvas}
+        >
+          {/* <BiSolidSave className="w-5 h-5" /> */}
+          <span>Save</span>
+        </button> 
+        </div>
+        
+        <div className=" border-r-2 border-gray-60 h-8 p-2 mt-2 flex">
+
+          <button
+            className=" flex items-center  rounded transition-colors duration-300 mr-2"
+            onClick={handleZoomIn}
+          >
+            <AiOutlineZoomIn className="w-5 h-5" />
+          </button>
+          <span className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300">
+            {zoomPercentage}%
+          </span>
+          <button
+            className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300 mr-2"
+            onClick={handleZoomOut}
+          >
+            <AiOutlineZoomOut className="w-5 h-5" />
+          </button>
+          <button
+            className="text-xs font-bold flex items-center text-black py-2 px-1 rounded transition-colors duration-300"
+            onClick={handleResetZoom}
+          >
+            <GiClick className="w-5 h-5" />
+          </button>
+
+          
+        </div>
+
         <button
           className={`flex items-center space-x-2 ${
             mode === "pen" ? "selected" : ""
@@ -394,7 +393,7 @@ const Whiteboard = () => {
           }`}
           onClick={() => handleModeChange("triangle")}
         >
-          <GiMoebiusTriangle className="w-5 h-5" />
+          <BsTriangle className="w-5 h-5" />
           {/* <span>Triangle</span> */}
         </button>
 
@@ -437,7 +436,8 @@ const Whiteboard = () => {
         >
           <GiResize className="w-5 h-5" />
         </button> */}
-       <input className=""
+        <input
+          className=""
           type="range"
           id="strokeWidth"
           min="1"
@@ -446,19 +446,34 @@ const Whiteboard = () => {
           onChange={handleStrokeWidthChange}
         />
         <input
-          className="rounded-lg mt-3 w-10 "
+          className="rounded-lg mt-2 w-10 "
           type="color"
           id="color"
           value={color}
           onChange={(e) => setColor(e.target.value)}
         />
         <span
-          className="w-6 h-6 rounded-full mt-4 "
+          className="w-6 h-6 rounded-full mt-3 "
           style={{
             backgroundColor: color,
             transform: `scale(${strokeWidth / 50})`,
           }}
         ></span>
+
+        <div className="border-l-2 border-gray-60 h-8  flex mt-2  ">
+            <button
+              className=" hover:bg-red-600	p-1   flex items-center   transition-colors duration-300"
+              onClick={handleClearAll}
+            >
+              <AiOutlineClear className="w-8 h-6" />
+            </button>
+            <button
+              className="hover:bg-slate-200	p-1   flex items-center    transition-colors duration-300"
+              onClick={handleUndo}
+            >
+              <BiUndo className="w-8 h-6" />
+            </button>
+          </div>
       </div>
     </div>
   );
